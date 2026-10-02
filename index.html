@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- QR Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .badge-alpha { background-color: #0d6efd; color: #fff; font-weight: bold; }
+        #qr-reader { width: 100%; border-radius: 8px; overflow: hidden; }
+        .qr-box { display: flex; justify-content: center; align-items: center; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; }
+        .company-logo { max-height: 90px; width: auto; object-fit: contain; }
+    </style>
+</head>
+<body class="py-4">
+
+<div class="container">
+    <!-- HEADER YA KAMPUNI (LOGO & HEADING 1) -->
+    <div class="text-center mb-4">
+        <!-- Weka picha ya logo kwenye folder moja na file hili kisha ubadilishe jina hapa (Mf: logo.jpg) -->
+        <img src="Alfa fire logo.PNG" alt="Alpha Fire Logo" class="company-logo mb-2">
+        <h1 class="text-primary fw-bold fs-2 text-uppercase">ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</h1>
+        <p class="text-muted fw-semibold">Mfumo wa Kusimamia Namba za Bidhaa & QR Code</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- SEHEMU YA KUTENGENEZA BIDHAA NA QR CODE -->
+        <div class="col-md-5">
+            <div class="card p-4 mb-4">
+                <h4 class="card-title text-secondary">Tengeneza Bidhaa & QR Code</h4>
+                <hr>
+                <form id="productForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Jina la Mfumo/Huduma</label>
+                        <input type="text" id="prefix" class="form-control" value="AFE" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Jina la Bidhaa</label>
+                        <input type="text" id="prodName" class="form-control" placeholder="Mf: Fire Extinguisher 6kg" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Maelezo ya Bidhaa</label>
+                        <textarea id="prodDesc" class="form-control" rows="2" placeholder="Maelezo mafupi..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Tengeneza Namba & QR Code</button>
+                </form>
+
+                <!-- PREVIEW YA QR CODE ILIYOTENGENEZWA -->
+                <div id="generatedQrContainer" class="mt-4 text-center d-none">
+                    <hr>
+                    <h5 class="text-success fw-bold">QR Code Imekamilika!</h5>
+                    <div class="qr-box d-inline-block my-2" id="newQrBox"></div>
+                    <p id="newSerialText" class="fw-bold text-primary mb-1"></p>
+                    <span class="badge badge-alpha p-2 mb-3">STATUS: IMETOKA KWETU ALPHA</span>
+                </div>
+               
+                <hr>
+                <button id="autoGenerateBtn" class="btn btn-outline-secondary w-100">
+                    Tengeneza Namba Zote (001 hadi 500) Mara Moja
+                </button>
+            </div>
+
+            <!-- SEHEMU YA KUSCAN QR CODE -->
+            <div class="card p-4">
+                <h4 class="card-title text-secondary">Scan QR Code</h4>
+                <hr>
+                <div id="qr-reader"></div>
+            </div>
+        </div>
+
+        <!-- SEHEMU YA ORODHA NA TAFUTA -->
+        <div class="col-md-7">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="card-title text-secondary mb-0">Orodha ya Bidhaa</h4>
+                    <span class="badge bg-primary fs-6" id="totalCount">Jumla: 0</span>
+                </div>
+               
+                <div class="mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Tafuta kwa namba au jina...">
+                </div>
+
+                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Namba ya Kipekee</th>
+                                <th>Taarifa za Bidhaa</th>
+                                <th>Status</th>
+                                <th>Kitendo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <!-- Data itaingia hapa kupitia JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL YA TAARIFA ZA BIDHAA NA QR CODE -->
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalTitle">Taarifa za Bidhaa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="qr-box mb-3 d-inline-block" id="modalQrCode"></div>
+                <h5 id="modalSerial" class="text-primary fw-bold"></h5>
+                <p id="modalDetails" class="text-muted mb-2"></p>
+                <div id="modalStatusBadge" class="mb-3"></div>
+                <div id="modalCreatedDate" class="small text-secondary"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let products = JSON.parse(localStorage.getItem('alpha_products')) || [];
+    let currentCounter = parseInt(localStorage.getItem('alpha_counter')) || 1;
+
+    const currentYear = new Date().getFullYear();
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+
+    const productForm = document.getElementById('productForm');
+    const productTableBody = document.getElementById('productTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const modalElement = document.getElementById('productModal');
+    const modal = new bootstrap.Modal(modalElement);
+
+    function generateSerialNumber(prefix, counter) {
+        const paddedCounter = String(counter).padStart(3, '0');
+        return `${prefix}-${currentYear}-${currentMonth}-${paddedCounter}`;
+    }
+
+    productForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const prefix = document.getElementById('prefix').value.trim().toUpperCase();
+        const name = document.getElementById('prodName').value.trim();
+        const desc = document.getElementById('prodDesc').value.trim();
+
+        const serialNumber = generateSerialNumber(prefix, currentCounter);
+
+        if (products.some(p => p.serial === serialNumber)) {
+            alert('Namba hii ya kipekee tayari ipo!');
+            return;
+        }
+
+        const newProduct = {
+            serial: serialNumber,
+            name: name,
+            description: desc,
+            status: 'REAL FROM ALPHA',
+            createdDate: new Date().toLocaleString()
+        };
+
+        products.unshift(newProduct);
+        currentCounter++;
+        saveData();
+        renderTable();
+
+        const qrBox = document.getElementById('newQrBox');
+        qrBox.innerHTML = '';
+        new QRCode(qrBox, {
+            text: `Namba: ${serialNumber}\nJina: ${name}\nStatus: REAL FROM ALPHA✔✔`,
+            width: 150,
+            height: 150
+        });
+
+        document.getElementById('newSerialText').innerText = serialNumber;
+        document.getElementById('generatedQrContainer').classList.remove('d-none');
+
+        productForm.reset();
+        document.getElementById('prefix').value = prefix;
+    });
+
+    document.getElementById('autoGenerateBtn').addEventListener('click', () => {
+        if (!confirm('Je, una uhakika unataka kutengeneza namba 500 kwa mara moja?')) return;
+
+        let addedCount = 0;
+        for (let i = 1; i <= 500; i++) {
+            const serial = generateSerialNumber('AFE', i);
+            if (!products.some(p => p.serial === serial)) {
+                products.push({
+                    serial: serial,
+                    name: `Bidhaa Sample #${i}`,
+                    description: 'Bidhaa iliyotengenezwa na mfumo wa Alpha Fire',
+                    status: 'IMETOKA KWETU ALPHA',
+                    createdDate: new Date().toLocaleString()
+                });
+                addedCount++;
+            }
+        }
+        if (currentCounter <= 500) currentCounter = 501;
+        saveData();
+        renderTable();
+        alert(`Imefanikiwa kutengeneza bidhaa ${addedCount}! Status: IMETOKA KWETU ALPHA`);
+    });
+
+    function saveData() {
+        localStorage.setItem('alpha_products', JSON.stringify(products));
+        localStorage.setItem('alpha_counter', currentCounter.toString());
+    }
+
+    function renderTable(filterText = '') {
+        productTableBody.innerHTML = '';
+        const filtered = products.filter(p =>
+            p.serial.toLowerCase().includes(filterText.toLowerCase()) ||
+            p.name.toLowerCase().includes(filterText.toLowerCase())
+        );
+
+        document.getElementById('totalCount').innerText = `Jumla: ${filtered.length}`;
+
+        filtered.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="fw-bold">${p.serial}</td>
+                <td>
+                    <div class="fw-semibold">${p.name}</div>
+                    <small class="text-muted">${p.description || 'Bila Maelezo'}</small>
+                </td>
+                <td><span class="badge badge-alpha">${p.status}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="showProductDetails('${p.serial}')">Angalia / QR</button>
+                </td>
+            `;
+            productTableBody.appendChild(tr);
+        });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+        renderTable(e.target.value);
+    });
+
+    function showProductDetails(serial) {
+        const prod = products.find(p => p.serial === serial);
+        if (!prod) return;
+
+        document.getElementById('modalTitle').innerText = prod.name;
+        document.getElementById('modalSerial').innerText = prod.serial;
+        document.getElementById('modalDetails').innerText = prod.description || 'Bila maelezo mengine.';
+        document.getElementById('modalStatusBadge').innerHTML = `<span class="badge badge-alpha fs-6">${prod.status}</span>`;
+        document.getElementById('modalCreatedDate').innerText = `Tarehe: ${prod.createdDate}`;
+
+        const qrContainer = document.getElementById('modalQrCode');
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+            text: `Namba: ${prod.serial}\nJina: ${prod.name}\nStatus: ${prod.status}`,
+            width: 140,
+            height: 140
+        });
+
+        modal.show();
+    }
+
+    function onScanSuccess(decodedText) {
+        const prod = products.find(p => decodedText.includes(p.serial) || p.serial === decodedText);
+        if (prod) {
+            showProductDetails(prod.serial);
+        } else {
+            alert(`QR Code imesomwa:\n${decodedText}\n\nHaipo kwenye mfumo au haijatoka ALPHA!`);
+        }
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+        "qr-reader", { fps: 10, qrbox: 250 }
+    );
+    html5QrcodeScanner.render(onScanSuccess);
+
+    renderTable();
+</script>
+
+</body>
+</html>
