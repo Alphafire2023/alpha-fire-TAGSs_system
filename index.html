@@ -26,29 +26,29 @@
     <div class="text-center mb-4">
         <img src="logo.jpg" alt="Alpha Fire Logo" class="company-logo mb-2">
         <h1 class="text-primary fw-bold fs-2 text-uppercase">ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</h1>
-        <p class="text-muted fw-semibold">TAGs Tracking System </p>
+        <p class="text-muted fw-semibold">Mfumo wa Kusimamia Namba za Bidhaa & QR Code</p>
     </div>
 
     <div class="row g-4">
         <!-- SEHEMU YA KUTENGENEZA BIDHAA NA QR CODE -->
         <div class="col-md-5">
             <div class="card p-4 mb-4">
-                <h4 class="card-title text-secondary">TAARIFA MUHIMU</h4>
+                <h4 class="card-title text-secondary">Tengeneza Bidhaa & QR Code</h4>
                 <hr>
-                <form id="productForm">
+                <form id="productForm" novalidate>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Jina la Mteja</label>
+                        <label class="form-label fw-semibold">Jina la Mfumo/Huduma <span class="text-danger">*</span></label>
                         <input type="text" id="prefix" class="form-control" value="AFE" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Jina la Bidhaa/Huduma</label>
+                        <label class="form-label fw-semibold">Jina la Bidhaa <span class="text-danger">*</span></label>
                         <input type="text" id="prodName" class="form-control" placeholder="Mf: Fire Extinguisher 6kg" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Maelezo ya Bidhaa</label>
-                        <textarea id="prodDesc" class="form-control" rows="2" placeholder="Maelezo mafupi, SERVICES AU SUPPLY..."></textarea>
+                        <label class="form-label fw-semibold">Maelezo ya Bidhaa <span class="text-danger">*</span></label>
+                        <textarea id="prodDesc" class="form-control" rows="2" placeholder="Maelezo mafupi ya bidhaa..." required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Tengeneza Namba</button>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Tengeneza Namba & QR Code</button>
                 </form>
 
                 <!-- PREVIEW YA QR CODE ILIYOTENGENEZWA -->
@@ -58,10 +58,10 @@
                     <div class="qr-box d-inline-block my-2" id="newQrBox"></div>
                     <p id="newSerialText" class="fw-bold text-primary mb-1"></p>
                     <div class="mb-2">
-                        <span class="badge badge-alpha p-2">STATUS: IMETHIBITISHWA NA ALPHA 🔥🧯</span>
+                        <span class="badge badge-alpha p-2">STATUS: IMETOKA KWETU ALPHA</span>
                     </div>
                     <button class="btn btn-success btn-sm mt-2 fw-bold w-100" onclick="downloadQR('newQrBox', document.getElementById('newSerialText').innerText)">
-                        Pakua QR ya Mteja
+                        📥 Pakua QR Code
                     </button>
                 </div>
                
@@ -73,7 +73,7 @@
 
             <!-- SEHEMU YA KUSCAN QR CODE -->
             <div class="card p-4">
-                <h4 class="card-title text-secondary">📷 Uthibitisho wa Huduma</h4>
+                <h4 class="card-title text-secondary">📷 Scan QR Code Hapa</h4>
                 <p class="small text-muted mb-2">Elekeza kamera kwenye QR Code ya bidhaa ili kuisoma:</p>
                 <hr>
                 <div id="qr-reader"></div>
@@ -85,7 +85,12 @@
             <div class="card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="card-title text-secondary mb-0">Orodha ya Bidhaa</h4>
-                    <span class="badge bg-primary fs-6" id="totalCount">Jumla: 0</span>
+                    <div>
+                        <span class="badge bg-primary fs-6 me-2" id="totalCount">Jumla: 0</span>
+                        <button class="btn btn-danger btn-sm fw-bold" onclick="clearAllProducts()">
+                            🗑️ Clear All
+                        </button>
+                    </div>
                 </div>
                
                 <div class="mb-3">
@@ -128,7 +133,7 @@
                 <div id="modalCreatedDate" class="small text-secondary mb-3"></div>
                 
                 <div class="d-grid gap-2">
-                    <button class="btn btn-success fw-bold" onclick="downloadQR('modalQrCode', document.getElementById('modalSerial').innerText)">
+                    <button class="btn btn-success fw-bold" id="modalDownloadBtn" onclick="downloadQR('modalQrCode', document.getElementById('modalSerial').innerText)">
                         📥 Pakua QR Code
                     </button>
                     <button class="btn btn-outline-danger btn-sm fw-bold" id="modalDeleteBtn">
@@ -162,14 +167,20 @@
 
     productForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        
         const prefix = document.getElementById('prefix').value.trim().toUpperCase();
         const name = document.getElementById('prodName').value.trim();
         const desc = document.getElementById('prodDesc').value.trim();
 
+        if (!prefix || !name || !desc) {
+            alert('⚠️ Tafadhali jaza sehemu zote (Jina la Mfumo, Jina la Bidhaa, na Maelezo).');
+            return;
+        }
+
         const serialNumber = generateSerialNumber(prefix, currentCounter);
 
         if (products.some(p => p.serial === serialNumber)) {
-            alert('Namba hii ya kipekee tayari ipo!');
+            alert('⚠️ Namba hii ya kipekee tayari ipo kwenye mfumo!');
             return;
         }
 
@@ -199,6 +210,8 @@
 
         productForm.reset();
         document.getElementById('prefix').value = prefix;
+
+        alert('✅ Bidhaa imehifadhiwa kikamilifu kwenye mfumo!');
     });
 
     document.getElementById('autoGenerateBtn').addEventListener('click', () => {
@@ -268,6 +281,23 @@
         }
     }
 
+    function clearAllProducts() {
+        if (products.length === 0) {
+            alert('Hakuna bidhaa za kufuta!');
+            return;
+        }
+
+        const confirmation = confirm('⚠️ TAHADHARI!\n\nJe, una uhakika unataka kufuta bidhaa ZOTE kwenye mfumo?\nKitendo hiki hakiwezi kurudishwa!');
+        if (confirmation) {
+            products = [];
+            currentCounter = 1;
+            saveData();
+            renderTable();
+            document.getElementById('generatedQrContainer').classList.add('d-none');
+            alert('Bidhaa zote zimefutwa kikamilifu!');
+        }
+    }
+
     searchInput.addEventListener('input', (e) => {
         renderTable(e.target.value);
     });
@@ -282,6 +312,8 @@
         document.getElementById('modalStatusBadge').innerHTML = `<span class="badge badge-alpha fs-6">${prod.status}</span>`;
         document.getElementById('modalCreatedDate').innerText = `Tarehe: ${prod.createdDate}`;
 
+        document.getElementById('modalDeleteBtn').classList.remove('d-none');
+        document.getElementById('modalDownloadBtn').classList.remove('d-none');
         document.getElementById('modalDeleteBtn').onclick = () => deleteProduct(prod.serial);
 
         const qrContainer = document.getElementById('modalQrCode');
@@ -318,18 +350,32 @@
         document.body.removeChild(link);
     }
 
-    // FUNCTION INAYOSHUGHULIKIA KUSCAN QR CODE
+    // KUHAKIKI NA KUSCAN QR CODE
     function onScanSuccess(decodedText) {
-        // Tafuta bidhaa kwa namba ya kipekee au maandishi ya QR
+        // Tafuta kama namba ipo kwenye orodha
         const prod = products.find(p => decodedText.includes(p.serial) || p.serial === decodedText);
+
         if (prod) {
+            // Kama bidhaa ipo
             showProductDetails(prod.serial);
         } else {
-            alert(`QR Code Imesomwa:\n${decodedText}\n\n⚠️ Bidhaa hii ipo kwenye mfumo au Imetoka ALPHA FIRE!`);
+            // Kama QR Code haina vipengele vya ALPHA FIRE au haipo kwenye mfumo
+            document.getElementById('modalTitle').innerText = "⚠️ TAARIFA YA HAKIKI";
+            document.getElementById('modalSerial').innerText = decodedText;
+            document.getElementById('modalDetails').innerText = "Matokeo ya Scan:";
+            document.getElementById('modalStatusBadge').innerHTML = `<span class="badge bg-danger fs-5 p-2">Bidhaa hii sio mali ya ALPHA FIRE</span>`;
+            document.getElementById('modalCreatedDate').innerText = "";
+            
+            document.getElementById('modalDeleteBtn').classList.add('d-none');
+            document.getElementById('modalDownloadBtn').classList.add('d-none');
+
+            const qrContainer = document.getElementById('modalQrCode');
+            qrContainer.innerHTML = '❌';
+
+            modal.show();
         }
     }
 
-    // Weka Scanner ya Kamera
     const html5QrcodeScanner = new Html5QrcodeScanner(
         "qr-reader", 
         { 
@@ -337,7 +383,7 @@
             qrbox: { width: 250, height: 250 },
             rememberLastUsedCamera: true
         },
-        /* verbose= */ false
+        false
     );
     html5QrcodeScanner.render(onScanSuccess);
 
