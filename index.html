@@ -127,10 +127,17 @@
                 <div id="modalStatusBadge" class="mb-3"></div>
                 <div id="modalCreatedDate" class="small text-secondary mb-3"></div>
                 
-                <!-- KITUFE CHA KUPAKUA QR CODE KWENYE MODAL -->
-                <button class="btn btn-success fw-bold w-100" onclick="downloadQR('modalQrCode', document.getElementById('modalSerial').innerText)">
-                    📥 Pakua QR Code
-                </button>
+                <div class="d-grid gap-2">
+                    <!-- KITUFE CHA KUPAKUA QR CODE KWENYE MODAL -->
+                    <button class="btn btn-success fw-bold" onclick="downloadQR('modalQrCode', document.getElementById('modalSerial').innerText)">
+                        📥 Pakua QR Code
+                    </button>
+
+                    <!-- KITUFE CHA KUFUTA KWENYE MODAL -->
+                    <button class="btn btn-outline-danger btn-sm fw-bold" id="modalDeleteBtn">
+                        🗑️ Futa Bidhaa Hii
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -244,11 +251,25 @@
                 </td>
                 <td><span class="badge badge-alpha">${p.status}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="showProductDetails('${p.serial}')">Angalia / QR</button>
+                    <button class="btn btn-sm btn-outline-primary me-1 mb-1" onclick="showProductDetails('${p.serial}')">Angalia / QR</button>
+                    <button class="btn btn-sm btn-outline-danger mb-1" onclick="deleteProduct('${p.serial}')">🗑️ Futa</button>
                 </td>
             `;
             productTableBody.appendChild(tr);
         });
+    }
+
+    // FUNCTION YA KUFUTA BIDHAA
+    function deleteProduct(serial) {
+        const prod = products.find(p => p.serial === serial);
+        if (!prod) return;
+
+        if (confirm(`Je, una uhakika unataka kufuta bidhaa hii?\n\nNamba: ${prod.serial}\nJina: ${prod.name}`)) {
+            products = products.filter(p => p.serial !== serial);
+            saveData();
+            renderTable(searchInput.value);
+            modal.hide();
+        }
     }
 
     searchInput.addEventListener('input', (e) => {
@@ -264,6 +285,9 @@
         document.getElementById('modalDetails').innerText = prod.description || 'Bila maelezo mengine.';
         document.getElementById('modalStatusBadge').innerHTML = `<span class="badge badge-alpha fs-6">${prod.status}</span>`;
         document.getElementById('modalCreatedDate').innerText = `Tarehe: ${prod.createdDate}`;
+
+        // Weka kazi ya kufuta kwenye kitufe cha Modal
+        document.getElementById('modalDeleteBtn').onclick = () => deleteProduct(prod.serial);
 
         const qrContainer = document.getElementById('modalQrCode');
         qrContainer.innerHTML = '';
