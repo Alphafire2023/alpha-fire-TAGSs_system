@@ -4,144 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</title>
-    <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QRCode.js Library -->
+    <!-- QR Code Generator Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- HTML5 QR Code Scanner -->
+    <!-- QR Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .badge-haijaauzwa { background-color: #0d6efd; color: #ffffff; font-weight: 600; }
-        .badge-imeuzwa { background-color: #198754; color: #ffffff; font-weight: 600; }
-        .qr-box { display: flex; justify-content: center; align-items: center; padding: 15px; background: #fff; border-radius: 10px; border: 2px dashed #dee2e6; }
-        .table-responsive { max-height: 550px; overflow-y: auto; }
-        .header-title { color: #0d6efd; font-weight: 800; }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .badge-alpha { background-color: #0d6efd; color: #fff; font-weight: bold; }
+        #qr-reader { width: 100%; border-radius: 8px; overflow: hidden; border: 2px dashed #0d6efd; }
+        .qr-box { display: flex; justify-content: center; align-items: center; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; }
+        .company-logo { max-height: 90px; width: auto; object-fit: contain; }
     </style>
 </head>
 <body class="py-4">
 
-<div class="container-fluid px-4">
-    <!-- KICHWA CHA KAMPUNI -->
+<div class="container">
+    <!-- HEADER YA KAMPUNI -->
     <div class="text-center mb-4">
-        <h2 class="fw-bold text-primary mb-0">ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</h2>
-        <p class="text-muted small">Product Number & QR Code Management System</p>
-    </div>
-
-    <!-- TAKWIMU FUPI -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card p-3 bg-primary text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-white-50 text-uppercase fw-bold">Jumla ya Bidhaa</small>
-                        <h2 class="fw-bold mb-0" id="statTotal">0</h2>
-                    </div>
-                    <i class="fa-solid fa-boxes-stacked fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3 bg-info text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-white-50 text-uppercase fw-bold">FROM US ALPHA</small>
-                        <h2 class="fw-bold mb-0" id="statUnsold">0</h2>
-                    </div>
-                    <i class="fa-solid fa-store fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3 bg-success text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <small class="text-white-50 text-uppercase fw-bold">Zimeuzwa / IMEUZWA</small>
-                        <h2 class="fw-bold mb-0" id="statSold">0</h2>
-                    </div>
-                    <i class="fa-solid fa-circle-check fa-2x opacity-50"></i>
-                </div>
-            </div>
-        </div>
+        <img src="logo.jpg" alt="Alpha Fire Logo" class="company-logo mb-2">
+        <h1 class="text-primary fw-bold fs-2 text-uppercase">ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</h1>
+        <p class="text-muted fw-semibold">Mfumo wa Kusimamia Namba za Bidhaa & QR Code</p>
     </div>
 
     <div class="row g-4">
-        <!-- SEHEMU YA KUTENGENEZA BIDHAA -->
-        <div class="col-lg-4">
+        <!-- SEHEMU YA KUTENGENEZA BIDHAA NA QR CODE -->
+        <div class="col-md-5">
             <div class="card p-4 mb-4">
-                <h5 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-plus-circle me-2"></i>Create Product & QR Code</h5>
-                <form id="productForm">
+                <h4 class="card-title text-secondary">Tengeneza Bidhaa & QR Code</h4>
+                <hr>
+                <form id="productForm" novalidate>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">System/Service Name (System Code)</label>
-                        <input type="text" id="systemCode" class="form-control" value="AFE" required>
+                        <label class="form-label fw-semibold">Jina la Mfumo/Huduma (System Code)</label>
+                        <!-- KISANDUKU HIKI KINAJIJAZA NA KIMEFUNGWA KISIBADILISHWE -->
+                        <input type="text" id="prefix" class="form-control bg-light" value="AFE" readonly disabled>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Jina la Mteja (Customer Name) *</label>
-                        <input type="text" id="customerName" class="form-control" placeholder="Mfano: John Doe / Mteja X" required>
+                        <label class="form-label fw-semibold">Jina la Bidhaa <span class="text-danger">*</span></label>
+                        <input type="text" id="prodName" class="form-control" placeholder="Mf: Fire Extinguisher 6kg" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Product Name *</label>
-                        <input type="text" id="prodName" class="form-control" placeholder="Ex: Fire Extinguisher 6kg" required>
+                        <label class="form-label fw-semibold">Maelezo ya Bidhaa <span class="text-danger">*</span></label>
+                        <textarea id="prodDesc" class="form-control" rows="2" placeholder="Maelezo mafupi ya bidhaa..." required></textarea>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Product Description *</label>
-                        <textarea id="prodDesc" class="form-control" rows="2" placeholder="Brief product description..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold">
-                        <i class="fa-solid fa-gear me-1"></i> Generate Number & QR Code
-                    </button>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Tengeneza Namba & QR Code</button>
                 </form>
 
-                <hr class="my-3">
-
-                <button id="autoGenerateBtn" class="btn btn-outline-dark w-100 fw-semibold">
-                    <i class="fa-solid fa-bolt me-1"></i> Generate All Numbers (001 to 500) at Once
+                <!-- PREVIEW YA QR CODE ILIYOTENGENEZWA -->
+                <div id="generatedQrContainer" class="mt-4 text-center d-none">
+                    <hr>
+                    <h5 class="text-success fw-bold">QR Code Imekamilika!</h5>
+                    <div class="qr-box d-inline-block my-2" id="newQrBox"></div>
+                    <p id="newSerialText" class="fw-bold text-primary mb-1"></p>
+                    <div class="mb-2">
+                        <span class="badge badge-alpha p-2">STATUS: IMETOKA KWETU ALPHA</span>
+                    </div>
+                    <button class="btn btn-success btn-sm mt-2 fw-bold w-100" onclick="downloadQR('newQrBox', document.getElementById('newSerialText').innerText)">
+                        📥 Pakua QR Code
+                    </button>
+                </div>
+               
+                <hr>
+                <button id="autoGenerateBtn" class="btn btn-outline-secondary w-100">
+                    Tengeneza Namba Zote (001 hadi 500) Mara Moja
                 </button>
             </div>
 
-            <!-- SEHEMU YA SCANNER -->
+            <!-- SEHEMU YA KUSCAN QR CODE -->
             <div class="card p-4">
-                <h5 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-camera me-2"></i>Scan QR Code Here</h5>
-                <div id="qr-reader" style="width: 100%;"></div>
+                <h4 class="card-title text-secondary">📷 Scan QR Code Hapa</h4>
+                <p class="small text-muted mb-2">Elekeza kamera kwenye QR Code ya bidhaa ili kuisoma:</p>
+                <hr>
+                <div id="qr-reader"></div>
             </div>
         </div>
 
-        <!-- ORODHA YA BIDHAA NA TAFUTA -->
-        <div class="col-lg-8">
+        <!-- SEHEMU YA ORODHA NA TAFUTA -->
+        <div class="col-md-7">
             <div class="card p-4">
-                <div class="row g-2 mb-3 align-items-center">
-                    <div class="col-md-5">
-                        <h5 class="fw-bold text-secondary mb-0"><i class="fa-solid fa-list me-2"></i>Product List</h5>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" id="searchInput" class="form-control" placeholder="Search by number, customer, or name...">
-                        </div>
-                    </div>
-                    <div class="col-md-3 text-end">
-                        <button class="btn btn-danger btn-sm fw-bold" onclick="clearAllData()">
-                            <i class="fa-solid fa-trash me-1"></i> Clear All
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="card-title text-secondary mb-0">Orodha ya Bidhaa</h4>
+                    <div>
+                        <span class="badge bg-primary fs-6 me-2" id="totalCount">Jumla: 0</span>
+                        <button class="btn btn-danger btn-sm fw-bold" onclick="clearAllProducts()">
+                            🗑️ Clear All
                         </button>
                     </div>
                 </div>
+               
+                <div class="mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Tafuta kwa namba au jina...">
+                </div>
 
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-hover align-middle">
-                        <thead class="table-light">
+                        <thead class="table-light sticky-top">
                             <tr>
-                                <th>Unique Number</th>
-                                <th>Mteja / Customer</th>
-                                <th>Product Information</th>
+                                <th>Namba ya Kipekee</th>
+                                <th>Taarifa za Bidhaa</th>
                                 <th>Status</th>
-                                <th class="text-end">Action</th>
+                                <th>Kitendo</th>
                             </tr>
                         </thead>
                         <tbody id="productTableBody">
-                            <!-- Data itaingizwa hapa na JS -->
+                            <!-- Data itaingia hapa kupitia JS -->
                         </tbody>
                     </table>
                 </div>
@@ -150,9 +118,9 @@
     </div>
 </div>
 
-<!-- MODAL YA DETAIL ZA BIDHAA NA QR CODE -->
+<!-- MODAL YA TAARIFA ZA BIDHAA NA QR CODE -->
 <div class="modal fade" id="productModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="modalTitle">Taarifa za Bidhaa</h5>
@@ -160,241 +128,260 @@
             </div>
             <div class="modal-body text-center">
                 <div class="qr-box mb-3 d-inline-block" id="modalQrCode"></div>
-                <h4 id="modalSerial" class="text-primary fw-bold mb-1"></h4>
-                <p id="modalCustomer" class="fw-bold text-dark mb-1"></p>
-                <p id="modalDetails" class="text-muted small mb-3"></p>
+                <h5 id="modalSerial" class="text-primary fw-bold"></h5>
+                <p id="modalDetails" class="text-muted mb-2"></p>
+                <div id="modalStatusBadge" class="mb-3"></div>
+                <div id="modalCreatedDate" class="small text-secondary mb-3"></div>
                 
-                <div id="modalStatusBadge" class="mb-2"></div>
-                <div id="modalSoldDate" class="small text-secondary mb-3"></div>
-            </div>
-            <div class="modal-footer d-flex justify-content-between" id="modalFooter">
-                <!-- Vifungo vinaingia hapa -->
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success fw-bold" id="modalDownloadBtn" onclick="downloadQR('modalQrCode', document.getElementById('modalSerial').innerText)">
+                        📥 Pakua QR Code
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm fw-bold" id="modalDeleteBtn">
+                        🗑️ Futa Bidhaa Hii
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Bootstrap 5 Bundle JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    let products = JSON.parse(localStorage.getItem('alpha_fire_products')) || [];
-    let currentCounter = parseInt(localStorage.getItem('alpha_fire_counter')) || 1;
+    let products = JSON.parse(localStorage.getItem('alpha_products')) || [];
+    let currentCounter = parseInt(localStorage.getItem('alpha_counter')) || 1;
 
-    const now = new Date();
-    const currentYear = now.getFullYear(); // 2026
-    const currentMonth = String(now.getMonth() + 1).padStart(2, '0'); // 10
+    const currentYear = new Date().getFullYear();
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 
     const productForm = document.getElementById('productForm');
     const productTableBody = document.getElementById('productTableBody');
     const searchInput = document.getElementById('searchInput');
-    const modal = new bootstrap.Modal(document.getElementById('productModal'));
+    const modalElement = document.getElementById('productModal');
+    const modal = new bootstrap.Modal(modalElement);
 
-    function generateSerial(code, counter) {
-        const padded = String(counter).padStart(3, '0');
-        return `${code}-${currentYear}-${currentMonth}-${padded}`;
+    function generateSerialNumber(prefix, counter) {
+        const paddedCounter = String(counter).padStart(3, '0');
+        return `${prefix}-${currentYear}-${currentMonth}-${paddedCounter}`;
     }
 
     productForm.addEventListener('submit', (e) => {
         e.preventDefault();
-
-        const code = document.getElementById('systemCode').value.trim().toUpperCase() || 'AFE';
-        const customer = document.getElementById('customerName').value.trim();
+        
+        // Prefix inatoka kwenye kisanduku kilichofungwa
+        const prefix = document.getElementById('prefix').value.trim().toUpperCase() || 'AFE';
         const name = document.getElementById('prodName').value.trim();
         const desc = document.getElementById('prodDesc').value.trim();
-        const serialNumber = generateSerial(code, currentCounter);
+
+        if (!name || !desc) {
+            alert('⚠️ Tafadhali jaza sehemu zote za Jina la Bidhaa na Maelezo.');
+            return;
+        }
+
+        const serialNumber = generateSerialNumber(prefix, currentCounter);
 
         if (products.some(p => p.serial === serialNumber)) {
-            alert('Namba hii tayari ipo!');
+            alert('⚠️ Namba hii ya kipekee tayari ipo kwenye mfumo!');
             return;
         }
 
         const newProduct = {
             serial: serialNumber,
-            customer: customer,
             name: name,
             description: desc,
-            status: 'FROM US ALPHA',
-            createdDate: new Date().toLocaleString(),
-            soldDate: '-'
+            status: 'IMETOKA KWETU ALPHA',
+            createdDate: new Date().toLocaleString()
         };
 
         products.unshift(newProduct);
         currentCounter++;
         saveData();
         renderTable();
+
+        const qrBox = document.getElementById('newQrBox');
+        qrBox.innerHTML = '';
+        new QRCode(qrBox, {
+            text: serialNumber,
+            width: 150,
+            height: 150
+        });
+
+        document.getElementById('newSerialText').innerText = serialNumber;
+        document.getElementById('generatedQrContainer').classList.remove('d-none');
+
         productForm.reset();
-        document.getElementById('systemCode').value = code;
+
+        alert('✅ Bidhaa imehifadhiwa kikamilifu kwenye mfumo!');
     });
 
     document.getElementById('autoGenerateBtn').addEventListener('click', () => {
-        const customer = prompt("Weka jina la mteja kwa ajili ya bidhaa hizi:", "General Customer");
-        if (!customer) return;
+        if (!confirm('Je, una uhakika unataka kutengeneza namba 500 kwa mara moja?')) return;
 
-        let createdCount = 0;
-        const code = document.getElementById('systemCode').value.trim().toUpperCase() || 'AFE';
-
+        let addedCount = 0;
         for (let i = 1; i <= 500; i++) {
-            const serial = generateSerial(code, i);
+            const serial = generateSerialNumber('AFE', i);
             if (!products.some(p => p.serial === serial)) {
                 products.push({
                     serial: serial,
-                    customer: customer,
-                    name: `Fire Extinguisher #${i}`,
-                    description: 'Auto generated product',
-                    status: 'FROM US ALPHA',
-                    createdDate: new Date().toLocaleString(),
-                    soldDate: '-'
+                    name: `Bidhaa Sample #${i}`,
+                    description: 'Bidhaa iliyotengenezwa na mfumo wa Alpha Fire',
+                    status: 'IMETOKA KWETU ALPHA',
+                    createdDate: new Date().toLocaleString()
                 });
-                createdCount++;
+                addedCount++;
             }
         }
         if (currentCounter <= 500) currentCounter = 501;
         saveData();
         renderTable();
-        alert(`Imefanikiwa kutengeneza bidhaa ${createdCount}!`);
+        alert(`Imefanikiwa kutengeneza bidhaa ${addedCount}! Status: IMETOKA KWETU ALPHA`);
     });
 
     function saveData() {
-        localStorage.setItem('alpha_fire_products', JSON.stringify(products));
-        localStorage.setItem('alpha_fire_counter', currentCounter.toString());
-        updateStats();
-    }
-
-    function updateStats() {
-        const total = products.length;
-        const sold = products.filter(p => p.status === 'IMEUZWA').length;
-        const unsold = total - sold;
-
-        document.getElementById('statTotal').innerText = total;
-        document.getElementById('statUnsold').innerText = unsold;
-        document.getElementById('statSold').innerText = sold;
+        localStorage.setItem('alpha_products', JSON.stringify(products));
+        localStorage.setItem('alpha_counter', currentCounter.toString());
     }
 
     function renderTable(filterText = '') {
         productTableBody.innerHTML = '';
-        
-        const filtered = products.filter(p => 
+        const filtered = products.filter(p =>
             p.serial.toLowerCase().includes(filterText.toLowerCase()) ||
-            p.name.toLowerCase().includes(filterText.toLowerCase()) ||
-            (p.customer && p.customer.toLowerCase().includes(filterText.toLowerCase()))
+            p.name.toLowerCase().includes(filterText.toLowerCase())
         );
 
-        if (filtered.length === 0) {
-            productTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Hakuna taarifa iliyopatikana.</td></tr>`;
-            return;
-        }
+        document.getElementById('totalCount').innerText = `Jumla: ${filtered.length}`;
 
         filtered.forEach(p => {
-            const isSold = p.status === 'IMEUZWA';
-            const badgeClass = isSold ? 'badge-imeuzwa' : 'badge-haijaauzwa';
-            
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="fw-bold text-primary">${p.serial}</td>
-                <td class="fw-semibold text-dark">${p.customer || '-'}</td>
+                <td class="fw-bold">${p.serial}</td>
                 <td>
                     <div class="fw-semibold">${p.name}</div>
-                    <small class="text-muted d-block text-truncate" style="max-width: 180px;">${p.description}</small>
+                    <small class="text-muted">${p.description || 'Bila Maelezo'}</small>
                 </td>
-                <td><span class="badge ${badgeClass} px-2 py-1">${p.status}</span></td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary me-1" onclick="showDetails('${p.serial}')">
-                        <i class="fa-solid fa-qrcode"></i> Check / QR
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${p.serial}')">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                <td><span class="badge badge-alpha">${p.status}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1 mb-1" onclick="showProductDetails('${p.serial}')">Angalia / QR</button>
+                    <button class="btn btn-sm btn-outline-danger mb-1" onclick="deleteProduct('${p.serial}')">🗑️ Futa</button>
                 </td>
             `;
             productTableBody.appendChild(tr);
         });
+    }
 
-        updateStats();
+    function deleteProduct(serial) {
+        const prod = products.find(p => p.serial === serial);
+        if (!prod) return;
+
+        if (confirm(`Je, una uhakika unataka kufuta bidhaa hii?\n\nNamba: ${prod.serial}\nJina: ${prod.name}`)) {
+            products = products.filter(p => p.serial !== serial);
+            saveData();
+            renderTable(searchInput.value);
+            modal.hide();
+        }
+    }
+
+    function clearAllProducts() {
+        if (products.length === 0) {
+            alert('Hakuna bidhaa za kufuta!');
+            return;
+        }
+
+        const confirmation = confirm('⚠️ TAHADHARI!\n\nJe, una uhakika unataka kufuta bidhaa ZOTE kwenye mfumo?\nKitendo hiki hakiwezi kurudishwa!');
+        if (confirmation) {
+            products = [];
+            currentCounter = 1;
+            saveData();
+            renderTable();
+            document.getElementById('generatedQrContainer').classList.add('d-none');
+            alert('Bidhaa zote zimefutwa kikamilifu!');
+        }
     }
 
     searchInput.addEventListener('input', (e) => {
         renderTable(e.target.value);
     });
 
-    window.showDetails = function(serial) {
-        const product = products.find(p => p.serial === serial);
-        if (!product) return;
+    function showProductDetails(serial) {
+        const prod = products.find(p => p.serial === serial);
+        if (!prod) return;
 
-        document.getElementById('modalTitle').innerText = product.name;
-        document.getElementById('modalSerial').innerText = product.serial;
-        document.getElementById('modalCustomer').innerText = `Mteja: ${product.customer || '-'}`;
-        document.getElementById('modalDetails').innerText = product.description;
+        document.getElementById('modalTitle').innerText = prod.name;
+        document.getElementById('modalSerial').innerText = prod.serial;
+        document.getElementById('modalDetails').innerText = prod.description || 'Bila maelezo mengine.';
+        document.getElementById('modalStatusBadge').innerHTML = `<span class="badge badge-alpha fs-6">${prod.status}</span>`;
+        document.getElementById('modalCreatedDate').innerText = `Tarehe: ${prod.createdDate}`;
 
-        const isSold = product.status === 'IMEUZWA';
-        const badgeClass = isSold ? 'badge-imeuzwa' : 'badge-haijaauzwa';
-        document.getElementById('modalStatusBadge').innerHTML = `<span class="badge ${badgeClass} px-3 py-2 fs-6">${product.status}</span>`;
-
-        document.getElementById('modalSoldDate').innerText = isSold ? `Iliuzwa: ${product.soldDate}` : '';
+        document.getElementById('modalDeleteBtn').classList.remove('d-none');
+        document.getElementById('modalDownloadBtn').classList.remove('d-none');
+        document.getElementById('modalDeleteBtn').onclick = () => deleteProduct(prod.serial);
 
         const qrContainer = document.getElementById('modalQrCode');
         qrContainer.innerHTML = '';
         new QRCode(qrContainer, {
-            text: `Namba: ${product.serial}\nMteja: ${product.customer}\nBidhaa: ${product.name}\nStatus: ${product.status}`,
-            width: 160,
-            height: 160
+            text: prod.serial,
+            width: 140,
+            height: 140
         });
 
-        const footer = document.getElementById('modalFooter');
-        footer.innerHTML = `
-            <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Funga</button>
-            <button class="btn ${isSold ? 'btn-warning' : 'btn-success'} fw-bold" onclick="toggleStatus('${product.serial}')">
-                ${isSold ? 'Badilisha Kuwa FROM US ALPHA' : 'Badilisha Kuwa IMEUZWA'}
-            </button>
-        `;
-
         modal.show();
-    };
+    }
 
-    window.toggleStatus = function(serial) {
-        const product = products.find(p => p.serial === serial);
-        if (product) {
-            if (product.status === 'FROM US ALPHA') {
-                product.status = 'IMEUZWA';
-                product.soldDate = new Date().toLocaleString();
-            } else {
-                product.status = 'FROM US ALPHA';
-                product.soldDate = '-';
-            }
-            saveData();
-            renderTable(searchInput.value);
-            showDetails(serial);
-        }
-    };
+    function downloadQR(containerId, filename) {
+        const qrContainer = document.getElementById(containerId);
+        const img = qrContainer.querySelector('img');
+        const canvas = qrContainer.querySelector('canvas');
 
-    window.deleteProduct = function(serial) {
-        if (confirm(`Je, una uhakika unataka kufuta bidhaa ${serial}?`)) {
-            products = products.filter(p => p.serial !== serial);
-            saveData();
-            renderTable(searchInput.value);
-        }
-    };
-
-    window.clearAllData = function() {
-        if (confirm("Je, una uhakika unataka kufuta data ZOTE kwenye mfumo?")) {
-            products = [];
-            currentCounter = 1;
-            saveData();
-            renderTable();
-        }
-    };
-
-    // Camera QR Scanner
-    function onScanSuccess(decodedText) {
-        const product = products.find(p => decodedText.includes(p.serial));
-        if (product) {
-            showDetails(product.serial);
+        let imageSrc = '';
+        if (img && img.src) {
+            imageSrc = img.src;
+        } else if (canvas) {
+            imageSrc = canvas.toDataURL("image/png");
         } else {
-            alert(`Matokeo ya Scan: ${decodedText}`);
+            alert('QR Code haijapatikana kwa ajili ya kupakua!');
+            return;
+        }
+
+        const link = document.createElement('a');
+        link.href = imageSrc;
+        link.download = `QR_${filename || 'Alpha_Fire'}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function onScanSuccess(decodedText) {
+        const prod = products.find(p => decodedText.includes(p.serial) || p.serial === decodedText);
+
+        if (prod) {
+            showProductDetails(prod.serial);
+        } else {
+            document.getElementById('modalTitle').innerText = "⚠️ TAARIFA YA HAKIKI";
+            document.getElementById('modalSerial').innerText = decodedText;
+            document.getElementById('modalDetails').innerText = "Matokeo ya Scan:";
+            document.getElementById('modalStatusBadge').innerHTML = `<span class="badge bg-danger fs-5 p-2">Bidhaa hii sio mali ya ALPHA FIRE</span>`;
+            document.getElementById('modalCreatedDate').innerText = "";
+            
+            document.getElementById('modalDeleteBtn').classList.add('d-none');
+            document.getElementById('modalDownloadBtn').classList.add('d-none');
+
+            const qrContainer = document.getElementById('modalQrCode');
+            qrContainer.innerHTML = '❌';
+
+            modal.show();
         }
     }
 
-    let html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 200 });
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+        "qr-reader", 
+        { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            rememberLastUsedCamera: true
+        },
+        false
+    );
     html5QrcodeScanner.render(onScanSuccess);
 
     renderTable();
