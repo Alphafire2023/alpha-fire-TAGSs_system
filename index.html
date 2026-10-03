@@ -24,8 +24,7 @@
 <div class="container">
     <!-- HEADER YA KAMPUNI (LOGO & HEADING 1) -->
     <div class="text-center mb-4">
-        <!-- Weka picha ya logo kwenye folder moja na file hili kisha ubadilishe jina hapa (Mf: logo.jpg) -->
-        <img src="Alfa fire logo.PNG" alt="Alpha Fire Logo" class="company-logo mb-2">
+        <img src="logo.jpg" alt="Alpha Fire Logo" class="company-logo mb-2">
         <h1 class="text-primary fw-bold fs-2 text-uppercase">ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</h1>
         <p class="text-muted fw-semibold">Mfumo wa Kusimamia Namba za Bidhaa & QR Code</p>
     </div>
@@ -58,7 +57,13 @@
                     <h5 class="text-success fw-bold">QR Code Imekamilika!</h5>
                     <div class="qr-box d-inline-block my-2" id="newQrBox"></div>
                     <p id="newSerialText" class="fw-bold text-primary mb-1"></p>
-                    <span class="badge badge-alpha p-2 mb-3">STATUS: IMETOKA KWETU ALPHA</span>
+                    <div class="mb-2">
+                        <span class="badge badge-alpha p-2">STATUS: IMETOKA KWETU ALPHA</span>
+                    </div>
+                    <!-- KITUFE CHA KUPAKUA QR CODE -->
+                    <button class="btn btn-success btn-sm mt-2 fw-bold w-100" onclick="downloadQR('newQrBox', document.getElementById('newSerialText').innerText)">
+                        📥 Pakua QR Code
+                    </button>
                 </div>
                
                 <hr>
@@ -120,7 +125,12 @@
                 <h5 id="modalSerial" class="text-primary fw-bold"></h5>
                 <p id="modalDetails" class="text-muted mb-2"></p>
                 <div id="modalStatusBadge" class="mb-3"></div>
-                <div id="modalCreatedDate" class="small text-secondary"></div>
+                <div id="modalCreatedDate" class="small text-secondary mb-3"></div>
+                
+                <!-- KITUFE CHA KUPAKUA QR CODE KWENYE MODAL -->
+                <button class="btn btn-success fw-bold w-100" onclick="downloadQR('modalQrCode', document.getElementById('modalSerial').innerText)">
+                    📥 Pakua QR Code
+                </button>
             </div>
         </div>
     </div>
@@ -163,7 +173,7 @@
             serial: serialNumber,
             name: name,
             description: desc,
-            status: 'REAL FROM ALPHA',
+            status: 'IMETOKA KWETU ALPHA',
             createdDate: new Date().toLocaleString()
         };
 
@@ -175,7 +185,7 @@
         const qrBox = document.getElementById('newQrBox');
         qrBox.innerHTML = '';
         new QRCode(qrBox, {
-            text: `Namba: ${serialNumber}\nJina: ${name}\nStatus: REAL FROM ALPHA✔✔`,
+            text: `Namba: ${serialNumber}\nJina: ${name}\nStatus: IMETOKA KWETU ALPHA`,
             width: 150,
             height: 150
         });
@@ -264,6 +274,30 @@
         });
 
         modal.show();
+    }
+
+    // FUNGU CHA KUPAKUA (DOWNLOAD) QR CODE KAMA PICHA (PNG)
+    function downloadQR(containerId, filename) {
+        const qrContainer = document.getElementById(containerId);
+        const img = qrContainer.querySelector('img');
+        const canvas = qrContainer.querySelector('canvas');
+
+        let imageSrc = '';
+        if (img && img.src) {
+            imageSrc = img.src;
+        } else if (canvas) {
+            imageSrc = canvas.toDataURL("image/png");
+        } else {
+            alert('QR Code haijapatikana kwa ajili ya kupakua!');
+            return;
+        }
+
+        const link = document.createElement('a');
+        link.href = imageSrc;
+        link.download = `QR_${filename || 'Alpha_Fire'}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     function onScanSuccess(decodedText) {
