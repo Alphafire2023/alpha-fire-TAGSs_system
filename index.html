@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALPHA FIRE - Mfumo wa Bidhaa & QR Code</title>
+    <title>ALPHA FIRE - Mfumo wa Bidhaa, QR & Scanner</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- QR Code Generator Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- HTML5 QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -16,6 +18,7 @@
         .badge-unsold { background-color: #ffc107; color: #000; font-weight: bold; }
         .badge-sold { background-color: #198754; color: #fff; font-weight: bold; }
         .table-responsive { max-height: 550px; overflow-y: auto; }
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
     </style>
 </head>
 <body class="py-4">
@@ -25,7 +28,14 @@
     <div class="text-center mb-4">
         <img src="logo.jpg" alt="Alpha Fire Logo" class="company-logo mb-2" onerror="this.style.display='none'">
         <h2 class="text-primary fw-bold text-uppercase m-0">ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</h2>
-        <p class="text-muted fw-semibold">Mfumo wa Kutengeneza Namba za Bidhaa & QR Code</p>
+        <p class="text-muted fw-semibold">Mfumo wa Kutengeneza Namba za Bidhaa & Scanner ya Uhalali</p>
+    </div>
+
+    <!-- KITUFE CHA KUFUNGUA CAMERA/SCANNER -->
+    <div class="text-center mb-4">
+        <button class="btn btn-success btn-lg fw-bold shadow" onclick="openScannerModal()">
+            📷 Skani QR Code (Hakiki Uhalali wa Bidhaa)
+        </button>
     </div>
 
     <div class="row g-4">
@@ -35,7 +45,7 @@
                 <h5 class="card-title text-primary fw-bold mb-3">➕ Ongeza Bidhaa Mpya</h5>
                 <hr>
                 <form id="productForm">
-                    <!-- KISANDUKU CHA NAMBA YA KIPEKEE (INAJIJAZA NA KUMEFUNGWA) -->
+                    <!-- KISANDUKU CHA NAMBA YA KIPEKEE -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Namba ya Kipekee (Serial Number)</label>
                         <input type="text" id="serialInput" class="form-control bg-light text-primary fw-bold" readonly disabled>
@@ -114,7 +124,27 @@
     </div>
 </div>
 
-<!-- MODAL YA ANGALIA QR CODE NA TAARIFA -->
+<!-- MODAL YA QR SCANNER (CAMERA YA NYUMA TU) -->
+<div class="modal fade" id="scannerModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-primary">📷 Hakiki Bidhaa kwa Scanner</h5>
+                <button type="button" class="btn-close" onclick="closeScannerModal()"></button>
+            </div>
+            <div class="modal-body text-center">
+                <!-- Eneo la Video/Camera -->
+                <div id="reader" class="mb-3"></div>
+                <div id="scanFeedback" class="alert alert-info py-2 d-none">Inatafuta QR Code...</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary fw-bold" onclick="closeScannerModal()">Funga Scanner</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL YA ONYESHA QR CODE / TAARIFA ZA BIDHAA -->
 <div class="modal fade" id="productModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -123,6 +153,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
+                <div id="verificationStatus" class="mb-3"></div>
                 <div class="qr-box mb-3 d-inline-block" id="modalQrCode"></div>
                 <h5 id="modalSerial" class="text-primary fw-bold mb-1"></h5>
                 <h6 id="modalCustomer" class="text-dark fw-bold mb-2"></h6>
@@ -143,34 +174,35 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Kupata data kutoka LocalStorage
+    // LocalStorage Data
     let products = JSON.parse(localStorage.getItem('alpha_tag_products')) || [];
     let currentCounter = parseInt(localStorage.getItem('alpha_tag_counter')) || 1;
 
-    // Tarehe na Mwezi wa Sasa
+    // Tarehe na Mwezi
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
 
-    // Element References
+    // DOM Elements
     const productForm = document.getElementById('productForm');
     const serialInput = document.getElementById('serialInput');
     const customerNameInput = document.getElementById('customerName');
     const productTableBody = document.getElementById('productTableBody');
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
-    const modalElement = document.getElementById('productModal');
-    const modal = new bootstrap.Modal(modalElement);
+    
+    const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+    const scannerModal = new bootstrap.Modal(document.getElementById('scannerModal'));
     
     let activeModalSerial = '';
+    let html5QrCode = null;
 
-    // Kutengeneza Namba ya Kipekee (TAG-2026-10-001)
+    // Tengeneza Namba ya Serial (TAG-2026-10-001)
     function generateSerialNumber(counter) {
         const paddedCounter = String(counter).padStart(3, '0');
         return `TAG-${currentYear}-${currentMonth}-${paddedCounter}`;
     }
 
-    // Sasisha Kisanduku cha Serial Number kwenye Form
     function updateFormSerial() {
         if (currentCounter <= 500) {
             serialInput.value = generateSerialNumber(currentCounter);
@@ -179,13 +211,12 @@
         }
     }
 
-    // Kuhifadhi Kwenye LocalStorage
     function saveData() {
         localStorage.setItem('alpha_tag_products', JSON.stringify(products));
         localStorage.setItem('alpha_tag_counter', currentCounter.toString());
     }
 
-    // Form Submit Event
+    // Form Submit
     productForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
@@ -217,10 +248,10 @@
         customerNameInput.value = '';
         document.getElementById('prodName').value = '';
         document.getElementById('prodDesc').value = '';
-        alert(`✅ Bidhaa ${serialNumber} kwa ajili ya ${customer} imetengenezwa kikamilifu!`);
+        alert(`✅ Bidhaa ${serialNumber} imetengenezwa kikamilifu!`);
     });
 
-    // Kubadili Status (UNSOLD <-> SOLD)
+    // Toggle Status
     function toggleStatus(serial) {
         const product = products.find(p => p.serial === serial);
         if (product) {
@@ -230,7 +261,7 @@
         }
     }
 
-    // Onyesha Orodha ya Bidhaa Kwenye Table
+    // Render Table
     function renderTable(filterText = '', filterStatus = 'ALL') {
         productTableBody.innerHTML = '';
 
@@ -277,7 +308,151 @@
         });
     }
 
-    // Kutengeneza Namba Zote (001 - 500)
+    // Onyesha Taarifa za Bidhaa
+    function showProductDetails(serial, isVerified = null) {
+        const prod = products.find(p => p.serial === serial);
+        const verificationStatus = document.getElementById('verificationStatus');
+
+        if (!prod) {
+            // Kama bidhaa haijapatikana (Fake/Unknown Product)
+            document.getElementById('modalTitle').innerText = "TAARIFA ZA BIDHAA";
+            document.getElementById('modalSerial').innerText = serial;
+            document.getElementById('modalCustomer').innerText = "";
+            document.getElementById('modalDetails').innerText = "Namba hii haijasajiliwa kwenye mfumo!";
+            document.getElementById('modalStatusBadge').innerHTML = "";
+            document.getElementById('modalCreatedDate').innerText = "";
+            document.getElementById('modalQrCode').innerHTML = "❌";
+
+            verificationStatus.innerHTML = `
+                <div class="alert alert-danger fw-bold fs-5 mb-0">
+                    ⚠️ BIDHAA HII SI HALALI! <br>
+                    <small class="fs-6 font-normal">Namba haijapatikana kwenye mfumo rasmi wa Alpha Fire.</small>
+                </div>`;
+            
+            productModal.show();
+            return;
+        }
+
+        activeModalSerial = prod.serial;
+        document.getElementById('modalTitle').innerText = prod.name;
+        document.getElementById('modalSerial').innerText = prod.serial;
+        document.getElementById('modalCustomer').innerText = `Mteja: ${prod.customer || 'Hajawekwa'}`;
+        document.getElementById('modalDetails').innerText = prod.description;
+
+        if (isVerified === true) {
+            verificationStatus.innerHTML = `
+                <div class="alert alert-success fw-bold fs-5 mb-0">
+                    ✅ BIDHAA HALALI (AUTHENTIC)
+                </div>`;
+        } else {
+            verificationStatus.innerHTML = '';
+        }
+        
+        const badgeClass = prod.status === 'SOLD' ? 'badge-sold' : 'badge-unsold';
+        document.getElementById('modalStatusBadge').innerHTML = `<span class="badge ${badgeClass} fs-6">${prod.status}</span>`;
+        document.getElementById('modalCreatedDate').innerText = `Iliwekwa: ${prod.createdDate}`;
+
+        document.getElementById('modalDeleteBtn').onclick = () => {
+            deleteProduct(prod.serial);
+            productModal.hide();
+        };
+
+        const qrContainer = document.getElementById('modalQrCode');
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+            text: prod.serial,
+            width: 160,
+            height: 160
+        });
+
+        productModal.show();
+    }
+
+    // --- SEHEMU YA CAMERA SCANNER (REAR CAMERA ONLY) ---
+    function openScannerModal() {
+        scannerModal.show();
+        setTimeout(() => { startCameraScanner(); }, 400);
+    }
+
+    function startCameraScanner() {
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
+
+        // Configuration ya kulazimisha CAMERA YA NYUMA (facingMode: "environment")
+        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+        html5QrCode.start(
+            { facingMode: "environment" }, // Focus kwa rear camera tu
+            config,
+            onScanSuccess,
+            onScanFailure
+        ).catch(err => {
+            console.error("Camera Error: ", err);
+            alert("Imeshindwa kufungua Camera ya nyuma. Hakikisha umeruhusu matumizi ya Camera kwenye browser yako!");
+            closeScannerModal();
+        });
+    }
+
+    function onScanSuccess(decodedText) {
+        // Pindi QR inapokuwa iliyoskaniwa vizuri
+        closeScannerModal();
+
+        // Chomoa Serial Number kutoka kwenye matokeo ya Scan
+        let scannedSerial = decodedText.trim();
+        
+        // Kama QR ina maandishi mengi, tafuta TAG-2026-...
+        const match = scannedSerial.match(/TAG-\d{4}-\d{2}-\d{3}/i);
+        if (match) {
+            scannedSerial = match[0].toUpperCase();
+        }
+
+        // Hakiki uhalali wa Serial Number kwenye orodha
+        const exists = products.some(p => p.serial === scannedSerial);
+
+        if (exists) {
+            showProductDetails(scannedSerial, true);
+        } else {
+            showProductDetails(scannedSerial, false);
+        }
+    }
+
+    function onScanFailure(error) {
+        // Huwa inatokea mara kwa mara camera inapokuwa inatafuta QR (unaweza kuiacha wazi)
+    }
+
+    function closeScannerModal() {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                scannerModal.hide();
+            }).catch(err => console.error(err));
+        } else {
+            scannerModal.hide();
+        }
+    }
+
+    // Pakua QR Code
+    function downloadQR() {
+        const qrContainer = document.getElementById('modalQrCode');
+        const img = qrContainer.querySelector('img');
+        const canvas = qrContainer.querySelector('canvas');
+
+        let imageSrc = img ? img.src : (canvas ? canvas.toDataURL("image/png") : '');
+
+        if (!imageSrc) {
+            alert('QR Code haijapatikana!');
+            return;
+        }
+
+        const link = document.createElement('a');
+        link.href = imageSrc;
+        link.download = `QR_${activeModalSerial}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // Auto-generate 500 Numbers
     document.getElementById('autoGenerateBtn').addEventListener('click', () => {
         if (!confirm('Je, una uhakika unataka kutengeneza namba zote zilizobaki hadi 500 kwa mara moja?')) return;
 
@@ -303,60 +478,7 @@
         alert(`✅ Imefanikiwa kutengeneza bidhaa ${addedCount}!`);
     });
 
-    // Onyesha QR Code na Modal
-    function showProductDetails(serial) {
-        const prod = products.find(p => p.serial === serial);
-        if (!prod) return;
-
-        activeModalSerial = prod.serial;
-        document.getElementById('modalTitle').innerText = prod.name;
-        document.getElementById('modalSerial').innerText = prod.serial;
-        document.getElementById('modalCustomer').innerText = `Mteja: ${prod.customer || 'Hajawekwa'}`;
-        document.getElementById('modalDetails').innerText = prod.description;
-        
-        const badgeClass = prod.status === 'SOLD' ? 'badge-sold' : 'badge-unsold';
-        document.getElementById('modalStatusBadge').innerHTML = `<span class="badge ${badgeClass} fs-6">${prod.status}</span>`;
-        document.getElementById('modalCreatedDate').innerText = `Iliwekwa: ${prod.createdDate}`;
-
-        document.getElementById('modalDeleteBtn').onclick = () => {
-            deleteProduct(prod.serial);
-            modal.hide();
-        };
-
-        // Tengeneza QR Code
-        const qrContainer = document.getElementById('modalQrCode');
-        qrContainer.innerHTML = '';
-        new QRCode(qrContainer, {
-            text: `Serial: ${prod.serial}\nMteja: ${prod.customer}\nBidhaa: ${prod.name}`,
-            width: 160,
-            height: 160
-        });
-
-        modal.show();
-    }
-
-    // Pakua QR Code kama Picha
-    function downloadQR() {
-        const qrContainer = document.getElementById('modalQrCode');
-        const img = qrContainer.querySelector('img');
-        const canvas = qrContainer.querySelector('canvas');
-
-        let imageSrc = img ? img.src : (canvas ? canvas.toDataURL("image/png") : '');
-
-        if (!imageSrc) {
-            alert('QR Code haijapatikana!');
-            return;
-        }
-
-        const link = document.createElement('a');
-        link.href = imageSrc;
-        link.download = `QR_${activeModalSerial}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    // Futa Bidhaa Moja
+    // Delete Single
     function deleteProduct(serial) {
         if (confirm(`Je, una uhakika unataka kufuta bidhaa ${serial}?`)) {
             products = products.filter(p => p.serial !== serial);
@@ -365,7 +487,7 @@
         }
     }
 
-    // Futa Bidhaa Zote
+    // Delete All
     function clearAllProducts() {
         if (products.length === 0) return alert('Hakuna bidhaa za kufuta!');
         if (confirm('⚠️ TAHADHARI: Je, una uhakika unataka kufuta bidhaa ZOTE?')) {
