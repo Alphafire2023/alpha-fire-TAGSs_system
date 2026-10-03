@@ -14,7 +14,7 @@
         body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .badge-alpha { background-color: #0d6efd; color: #fff; font-weight: bold; }
-        #qr-reader { width: 100%; border-radius: 8px; overflow: hidden; }
+        #qr-reader { width: 100%; border-radius: 8px; overflow: hidden; border: 2px dashed #0d6efd; }
         .qr-box { display: flex; justify-content: center; align-items: center; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #ddd; }
         .company-logo { max-height: 90px; width: auto; object-fit: contain; }
     </style>
@@ -22,22 +22,22 @@
 <body class="py-4">
 
 <div class="container">
-    <!-- HEADER YA KAMPUNI (LOGO & HEADING 1) -->
+    <!-- HEADER YA KAMPUNI -->
     <div class="text-center mb-4">
         <img src="logo.jpg" alt="Alpha Fire Logo" class="company-logo mb-2">
         <h1 class="text-primary fw-bold fs-2 text-uppercase">ALPHA FIRE ENGINEERS & GENERAL WORKS COMPANY LIMITED</h1>
-        <p class="text-muted fw-semibold">Mfumo wa Kusimamia Namba za Bidhaa & QR Code</p>
+        <p class="text-muted fw-semibold">TAGs Tracking System </p>
     </div>
 
     <div class="row g-4">
         <!-- SEHEMU YA KUTENGENEZA BIDHAA NA QR CODE -->
         <div class="col-md-5">
             <div class="card p-4 mb-4">
-                <h4 class="card-title text-secondary">Tengeneza Bidhaa & QR Code</h4>
+                <h4 class="card-title text-secondary">TAARIFA MUHIMU</h4>
                 <hr>
                 <form id="productForm">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Jina la Mteja/Kampuni</label>
+                        <label class="form-label fw-semibold">Jina la Mteja</label>
                         <input type="text" id="prefix" class="form-control" value="AFE" required>
                     </div>
                     <div class="mb-3">
@@ -46,7 +46,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Maelezo ya Bidhaa</label>
-                        <textarea id="prodDesc" class="form-control" rows="2" placeholder="Maelezo mafupi mfano Services kwa Matengenezo au Supply kwa bidhaa mpya..."></textarea>
+                        <textarea id="prodDesc" class="form-control" rows="2" placeholder="Maelezo mafupi, SERVICES AU SUPPLY..."></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Tengeneza Namba & QR Code</button>
                 </form>
@@ -60,7 +60,6 @@
                     <div class="mb-2">
                         <span class="badge badge-alpha p-2">STATUS: IMETOKA KWETU ALPHA</span>
                     </div>
-                    <!-- KITUFE CHA KUPAKUA QR CODE -->
                     <button class="btn btn-success btn-sm mt-2 fw-bold w-100" onclick="downloadQR('newQrBox', document.getElementById('newSerialText').innerText)">
                         📥 Pakua QR Code
                     </button>
@@ -74,7 +73,8 @@
 
             <!-- SEHEMU YA KUSCAN QR CODE -->
             <div class="card p-4">
-                <h4 class="card-title text-secondary">Scan QR Code</h4>
+                <h4 class="card-title text-secondary">📷 Scan QR Code Hapa</h4>
+                <p class="small text-muted mb-2">Elekeza kamera kwenye QR Code ya bidhaa ili kuisoma:</p>
                 <hr>
                 <div id="qr-reader"></div>
             </div>
@@ -128,12 +128,9 @@
                 <div id="modalCreatedDate" class="small text-secondary mb-3"></div>
                 
                 <div class="d-grid gap-2">
-                    <!-- KITUFE CHA KUPAKUA QR CODE KWENYE MODAL -->
                     <button class="btn btn-success fw-bold" onclick="downloadQR('modalQrCode', document.getElementById('modalSerial').innerText)">
                         📥 Pakua QR Code
                     </button>
-
-                    <!-- KITUFE CHA KUFUTA KWENYE MODAL -->
                     <button class="btn btn-outline-danger btn-sm fw-bold" id="modalDeleteBtn">
                         🗑️ Futa Bidhaa Hii
                     </button>
@@ -192,7 +189,7 @@
         const qrBox = document.getElementById('newQrBox');
         qrBox.innerHTML = '';
         new QRCode(qrBox, {
-            text: `Namba: ${serialNumber}\nJina: ${name}\nStatus: IMETOKA KWETU ALPHA`,
+            text: serialNumber,
             width: 150,
             height: 150
         });
@@ -259,7 +256,6 @@
         });
     }
 
-    // FUNCTION YA KUFUTA BIDHAA
     function deleteProduct(serial) {
         const prod = products.find(p => p.serial === serial);
         if (!prod) return;
@@ -286,13 +282,12 @@
         document.getElementById('modalStatusBadge').innerHTML = `<span class="badge badge-alpha fs-6">${prod.status}</span>`;
         document.getElementById('modalCreatedDate').innerText = `Tarehe: ${prod.createdDate}`;
 
-        // Weka kazi ya kufuta kwenye kitufe cha Modal
         document.getElementById('modalDeleteBtn').onclick = () => deleteProduct(prod.serial);
 
         const qrContainer = document.getElementById('modalQrCode');
         qrContainer.innerHTML = '';
         new QRCode(qrContainer, {
-            text: `Namba: ${prod.serial}\nJina: ${prod.name}\nStatus: ${prod.status}`,
+            text: prod.serial,
             width: 140,
             height: 140
         });
@@ -300,7 +295,6 @@
         modal.show();
     }
 
-    // FUNGU CHA KUPAKUA (DOWNLOAD) QR CODE KAMA PICHA (PNG)
     function downloadQR(containerId, filename) {
         const qrContainer = document.getElementById(containerId);
         const img = qrContainer.querySelector('img');
@@ -324,17 +318,26 @@
         document.body.removeChild(link);
     }
 
+    // FUNCTION INAYOSHUGHULIKIA KUSCAN QR CODE
     function onScanSuccess(decodedText) {
+        // Tafuta bidhaa kwa namba ya kipekee au maandishi ya QR
         const prod = products.find(p => decodedText.includes(p.serial) || p.serial === decodedText);
         if (prod) {
             showProductDetails(prod.serial);
         } else {
-            alert(`QR Code imesomwa:\n${decodedText}\n\nHaipo kwenye mfumo au haijatoka ALPHA!`);
+            alert(`QR Code Imesomwa:\n${decodedText}\n\n⚠️ Bidhaa hii haipo kwenye mfumo au haijatoka ALPHA FIRE!`);
         }
     }
 
+    // Weka Scanner ya Kamera
     const html5QrcodeScanner = new Html5QrcodeScanner(
-        "qr-reader", { fps: 10, qrbox: 250 }
+        "qr-reader", 
+        { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            rememberLastUsedCamera: true
+        },
+        /* verbose= */ false
     );
     html5QrcodeScanner.render(onScanSuccess);
 
@@ -342,4 +345,4 @@
 </script>
 
 </body>
-</html>v
+</html>
