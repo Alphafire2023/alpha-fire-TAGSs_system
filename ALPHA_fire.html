@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Product Number & QR Code Management System</title>
+
+    <!-- Tailwind CSS kwa ajili ya Muundo wa Kisasa -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- QRCode.js Library kwa ajili ya Kutengeneza QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- JSZip & FileSaver kwa ajili ya Download All QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <!-- HTML5 QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        .status-badge-unsold {
+            background-color: #FEF3C7;
+            color: #D97706;
+            border: 1px solid #FCD34D;
+        }
+        .status-badge-sold {
+            background-color: #D1FAE5;
+            color: #059669;
+            border: 1px solid #6EE7B7;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans min-h-screen text-slate-800 pb-12">
+
+    <!-- Navbar / Header -->
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">SMART QR MANAGEMENT</h1>
+                <p class="text-xs text-indigo-200">Mfumo wa Kisasa wa Bidhaa, QR Codes na Mauzo</p>
+            </div>
+            
+            <!-- Link ya Mfumo -->
+            <div class="flex items-center gap-2 bg-indigo-800 px-3 py-2 rounded-lg border border-indigo-600 w-full md:w-auto">
+                <input type="text" id="systemLinkInput" readonly class="bg-transparent text-xs text-indigo-100 outline-none w-full md:w-64" value="">
+                <button onclick="copySystemLink()" class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold px-3 py-1.5 rounded transition shadow">
+                    COPY LINK
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
+
+        <!-- DASHBOARD STATS -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Products</p>
+                    <h3 id="statTotal" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-indigo-50 rounded-lg text-indigo-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Sold Products</p>
+                    <h3 id="statSold" class="text-3xl font-extrabold text-emerald-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-emerald-50 rounded-lg text-emerald-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Unsold Products</p>
+                    <h3 id="statUnsold" class="text-3xl font-extrabold text-amber-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-amber-50 rounded-lg text-amber-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- ACTION CONTROLS & SCANNER -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Generate Form -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <h2 class="text-lg font-bold text-slate-800 border-b pb-2">Tengeneza Bidhaa Mpya</h2>
+                <form id="createProductForm" onsubmit="handleCreateProduct(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Jina la Bidhaa (Hiari)</label>
+                        <input type="text" id="prodName" placeholder="Mfano: Tisheti ya Blue" class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Maelezo ya Bidhaa (Hiari)</label>
+                        <textarea id="prodDesc" rows="2" placeholder="Maelezo mepesi..." class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <button type="submit" id="btnCreate" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow flex justify-center items-center gap-2">
+                        <span>TENGENEZA BIDHAA MPYA</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Scanner & Verification -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4 lg:col-span-2">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h2 class="text-lg font-bold text-slate-800">Scan / Verify Product</h2>
+                    <button onclick="toggleCamera()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded border">
+                        📷 Tumia Camera Scanner
+                    </button>
+                </div>
+
+                <!-- Camera Container -->
+                <div id="reader" class="hidden w-full max-w-sm mx-auto overflow-hidden rounded-lg border"></div>
+
+                <div class="flex gap-2">
+                    <input type="text" id="verifyInput" placeholder="Ingiza Namba au QR Info (Mfano: 001 au PRODUCT-001)" class="flex-grow px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button onclick="handleManualVerify()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        VERIFY
+                    </button>
+                </div>
+
+                <!-- Verification Result Box -->
+                <div id="verifyResult" class="hidden p-4 rounded-xl border bg-slate-50 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span id="vStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-bold uppercase"></span>
+                            <h3 id="vTitle" class="text-xl font-extrabold text-slate-800 mt-2">PRODUCT: ---</h3>
+                            <p id="vDetails" class="text-xs text-slate-600 mt-1"></p>
+                        </div>
+                        <div id="vQrBox" class="p-2 bg-white rounded border"></div>
+                    </div>
+                    <div class="text-xs text-slate-500 border-t pt-2 grid grid-cols-2 gap-2">
+                        <p><strong>Tarehe ya Kutengenezwa:</strong> <span id="vCreated">---</span></p>
+                        <p><strong>Tarehe ya Kuuzwa:</strong> <span id="vSold">---</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEARCH AND BULK ACTIONS -->
+        <section class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="w-full md:w-96 relative">
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Tafuta kwa namba mfano: 001..." class="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+
+            <button onclick="downloadAllQRCodes()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>DOWNLOAD ALL QR CODES</span>
+            </button>
+        </section>
+
+        <!-- PRODUCT CARDS GRID -->
+        <section>
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Product cards zitapakiwa hapa kwa njia ya Javascript -->
+            </div>
+            <div id="emptyState" class="hidden text-center py-12 bg-white rounded-xl border border-dashed">
+                <p class="text-slate-500 text-sm">Hakuna bidhaa iliyopatikana au mfumo haujaanza kutengeneza bidhaa.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Hidden Container ya ku-render QR Codes kabla ya download -->
+    <div id="qrHiddenContainer" class="hidden"></div>
+
+    <!-- FIREBASE SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, updateDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ==========================================
+        // 1. FIREBASE CONFIGURATION
+        // WEKA CREDENTIALS ZAKO HALISI HAPA
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Global Firebase Instances
+        let db;
+        let productsList = [];
+        let html5QrcodeScanner = null;
+
+        // Anzisha App
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            initSystemLink();
+            listenToDatabase();
+        } catch (e) {
+            console.error("Firebase init error:", e);
+            alert("Tafadhali weka credentials halisi za Firebase kwenye code ili mfumo uweze kufanya kazi mtandaoni.");
+        }
+
+        // ==========================================
+        // 2. REAL-TIME DATABASE LISTENER
+        // ==========================================
+        function listenToDatabase() {
+            const q = query(collection(db, "products"), orderBy("productNumber", "asc"));
+            onSnapshot(q, (snapshot) => {
+                productsList = [];
+                snapshot.forEach((doc) => {
+                    productsList.push(doc.data());
+                });
+                updateDashboardStats();
+                renderProductsGrid(productsList);
+            }, (error) => {
+                console.error("Firestore Listen Error:", error);
+            });
+        }
+
+        // ==========================================
+        // 3. CREATE NEW PRODUCT (UP TO 500)
+        // ==========================================
+        window.handleCreateProduct = async function(e) {
+            e.preventDefault();
+
+            if (!db) {
+                alert("Database haijatambulika. Hakikisha umeiweka Firebase config vizuri.");
+                return;
+            }
+
+            if (productsList.length >= 500) {
+                alert("Umeikia kikomo cha mwisho cha bidhaa (500). Mfumo hauwezi kuongeza nyingine.");
+                return;
+            }
+
+            const btn = document.getElementById('btnCreate');
+            btn.disabled = true;
+            btn.innerText = "Inatengeneza...";
+
+            try {
+                // Tafuta namba inayofuata mfano 001, 002
+                const nextNumInt = productsList.length + 1;
+                const nextNumFormatted = String(nextNumInt).padStart(3, '0');
+                const qrInfo = `PRODUCT-${nextNumFormatted}`;
+                const today = new Date().toLocaleDateString('en-GB');
+
+                const newProduct = {
+                    productNumber: nextNumFormatted,
+                    productId: `PROD-${Date.now()}`,
+                    qrInfo: qrInfo,
+                    status: "HAIJAAUZWA",
+                    dateCreated: today,
+                    soldDate: "N/A",
+                    name: document.getElementById('prodName').value.trim() || `Product ${nextNumFormatted}`,
+                    description: document.getElementById('prodDesc').value.trim() || "No description"
+                };
+
+                // Hifadhi moja kwa moja Firestore
+                await setDoc(doc(db, "products", nextNumFormatted), newProduct);
+
+                // Reset Form
+                document.getElementById('createProductForm').reset();
+            } catch (error) {
+                console.error("Error adding product: ", error);
+                alert("Imefeli kutengeneza bidhaa. Angalia internet au Firebase config.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "TENGENEZA BIDHAA MPYA";
+            }
+        }
+
+        // ==========================================
+        // 4. MARK AS SOLD (PERMANENT)
+        // ==========================================
+        window.markAsSold = async function(prodNum) {
+            if (!confirm(`Je, una uhakika bidhaa ${prodNum} IMEUZWA? Mabadiliko haya hayawezi kurudishwa.`)) return;
+
+            const today = new Date().toLocaleDateString('en-GB');
+            try {
+                const prodRef = doc(db, "products", prodNum);
+                await updateDoc(prodRef, {
+                    status: "IMEUZWA",
+                    soldDate: today
+                });
+            } catch (error) {
+                console.error("Error updating status:", error);
+                alert("Imefeli kubadilisha status. Angalia connection yako.");
+            }
+        }
+
+        // ==========================================
+        // 5. RENDER PRODUCTS GRID
+        // ==========================================
+        function renderProductsGrid(data) {
+            const grid = document.getElementById('productsGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = "";
+
+            if (data.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            data.forEach(prod => {
+                const isSold = prod.status === "IMEUZWA";
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between space-y-3";
+
+                const badgeClass = isSold ? "status-badge-sold" : "status-badge-unsold";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-slate-400">#${prod.productNumber}</span>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full ${badgeClass}">${prod.status}</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-sm truncate">${prod.name}</h4>
+                        <p class="text-xs text-slate-500 line-clamp-2 mt-0.5">${prod.description}</p>
+                    </div>
+
+                    <!-- QR Code Display Box -->
+                    <div class="flex justify-center p-2 bg-slate-50 rounded-lg border border-slate-100" id="qr-container-${prod.productNumber}">
+                    </div>
+
+                    <div class="space-y-2 pt-1 border-t text-xs">
+                        <div class="flex justify-between text-slate-500">
+                            <span>Kutengenezwa:</span>
+                            <span class="font-medium text-slate-700">${prod.dateCreated}</span>
+                        </div>
+                        ${isSold ? `
+                        <div class="flex justify-between text-emerald-600">
+                            <span>Kuuzwa:</span>
+                            <span class="font-medium">${prod.soldDate}</span>
+                        </div>` : ''}
+
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-2 gap-2 pt-2">
+                            <button onclick="downloadSingleQR('${prod.productNumber}', '${prod.qrInfo}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-2 rounded font-semibold text-xs flex items-center justify-center gap-1">
+                                💾 QR
+                            </button>
+                            
+                            ${isSold ? `
+                                <button disabled class="bg-slate-200 text-slate-400 py-1.5 px-2 rounded font-semibold text-xs cursor-not-allowed text-center">
+                                    ALREADY SOLD
+                                </button>
+                            ` : `
+                                <button onclick="markAsSold('${prod.productNumber}')" class="bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 px-2 rounded font-semibold text-xs transition text-center shadow-sm">
+                                    IMEUZWA
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+
+                // Render QR code ndani ya card
+                setTimeout(() => {
+                    const qrBox = document.getElementById(`qr-container-${prod.productNumber}`);
+                    if (qrBox) {
+                        qrBox.innerHTML = "";
+                        new QRCode(qrBox, {
+                            text: prod.qrInfo,
+                            width: 100,
+                            height: 100,
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                }, 50);
+            });
+        }
+
+        // ==========================================
+        // 6. DASHBOARD STATS CALCULATOR
+        // ==========================================
+        function updateDashboardStats() {
+            const total = productsList.length;
+            const sold = productsList.filt
