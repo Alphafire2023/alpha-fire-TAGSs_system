@@ -1,0 +1,8 @@
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "smart-qr-system.firebaseapp.com",
+  projectId: "smart-qr-system",
+  storageBucket: "smart-qr-system.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef..."
+};
